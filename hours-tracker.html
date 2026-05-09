@@ -988,7 +988,10 @@ function fmtBreaks(breaks) {
 }
 
 function toDateStr(d) {
-  return d.toISOString().slice(0,10);
+  const yr = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const dy = String(d.getDate()).padStart(2, '0');
+  return `${yr}-${mo}-${dy}`;
 }
 
 function startOfWeek(d) {
@@ -999,11 +1002,12 @@ function startOfWeek(d) {
 
 // Pay period: bi-weekly starting from a known Sunday
 // Using 2024-01-07 as anchor (first Sunday of 2024)
-const ANCHOR = new Date('2024-01-07');
+const ANCHOR = new Date('2024-01-07T12:00:00');
 
 function getPayPeriod(date) {
-  const d = new Date(date);
-  const diff = Math.floor((d - ANCHOR) / (1000 * 60 * 60 * 24 * 7));
+  const d = (date instanceof Date) ? date : new Date(date + 'T12:00:00');
+  const msPerWeek = 1000 * 60 * 60 * 24 * 7;
+  const diff = Math.floor((d - ANCHOR) / msPerWeek);
   const periodNum = Math.floor(diff / 2);
   const start = new Date(ANCHOR);
   start.setDate(start.getDate() + periodNum * 14);
@@ -1015,7 +1019,7 @@ function getPayPeriod(date) {
 function getPayPeriodByOffset(offset) {
   const today = new Date();
   const current = getPayPeriod(today);
-  const start = new Date(current.start);
+  const start = new Date(current.start + 'T12:00:00');
   start.setDate(start.getDate() + offset * 14);
   const end = new Date(start);
   end.setDate(end.getDate() + 13);
